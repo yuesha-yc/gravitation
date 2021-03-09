@@ -40,6 +40,10 @@ repositories {
         name "Tterrag" // Used by MCP-Yarn Mixed Mappings
         url "https://maven.tterrag.com/"
     }
+    maven {
+        name "IzzelAliz"
+        url "https://maven.izzel.io/releases/"
+    }
 }
 
 minecraft {
