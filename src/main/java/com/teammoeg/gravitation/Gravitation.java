@@ -1,85 +1,112 @@
+/*
+ *  Copyright (c) 2021 TeamMoeg
+ *
+ *  This file is part of Gravitation.
+ *
+ *  Gravitation is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Gravitation is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with Gravitation. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.teammoeg.gravitation;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import com.teammoeg.gravitation.api.modinitializers.ModInitializer;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.stream.Collectors;
-
-// The value here should match an entry in the META-INF/mods.toml file
-@Mod("gravitation")
-public class Gravitation {
-
-    // Directly reference a log4j logger.
-    private static final Logger LOGGER = LogManager.getLogger();
+@Mod(Gravitation.MOD_ID)
+public class Gravitation implements ModInitializer {
+    public static final String MOD_ID = "gravitation";
+    public static final String MOD_NAME = "Gravitation";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
     public Gravitation() {
-        // Register the setup method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        // Register the enqueueIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        // Register the processIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        // Register the doClientStuff method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-
-        // Register ourselves for server and other game events we are interested in
-        MinecraftForge.EVENT_BUS.register(this);
+        IEventBus FORGE_BUS = MinecraftForge.EVENT_BUS, MOD_BUS = FMLJavaModLoadingContext.get().getModEventBus();
+        MOD_BUS.register(this);
+        MOD_BUS.register(new RegistryEventHandler());
+        FORGE_BUS.register(new ForgeEventHandler());
     }
 
-    private void setup(final FMLCommonSetupEvent event) {
-        // some preinit code
-        LOGGER.info("HELLO FROM PREINIT");
-        LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
+    @Override
+    public void onModCommonSetup2(FMLCommonSetupEvent aEvent) {
+        System.out.println("Hello from Common Setup");
     }
 
-    private void doClientStuff(final FMLClientSetupEvent event) {
-        // do something that can only be done on the client
-        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
+    @Override
+    public void onModClientSetup2(FMLClientSetupEvent aEvent) {
+
     }
 
-    private void enqueueIMC(final InterModEnqueueEvent event) {
-        // some example code to dispatch IMC to another mod
-        InterModComms.sendTo("gravitation", "helloworld", () -> {
-            LOGGER.info("Hello world from the MDK");
-            return "Hello world";
-        });
+    @Override
+    public void onModServerSetup2(FMLDedicatedServerSetupEvent event) {
+
     }
 
-    private void processIMC(final InterModProcessEvent event) {
-        // some example code to receive and process InterModComms from other mods
-        LOGGER.info("Got IMC {}", event.getIMCStream().
-                map(m -> m.getMessageSupplier().get()).
-                collect(Collectors.toList()));
+    @Override
+    public void onModIMCEnqueue2(InterModEnqueueEvent aEvent) {
+
     }
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
+    @Override
+    public void onModIMCProcess2(InterModProcessEvent aEvent) {
+
+    }
+
+    // Do not modify the codes below
+
+    @Override
+    public String getModID() {
+        return MOD_ID;
+    }
+
+    @Override
+    public String getModName() {
+        return MOD_NAME;
+    }
+
+    @Override
+    public String getModNameForLog() {
+        return MOD_NAME.toUpperCase().replace(' ', '_') + "_Mod";
+    }
+
     @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
-        LOGGER.info("HELLO from server starting");
+    public void onCommonSetup(FMLCommonSetupEvent aEvent) {
+        onModCommonSetup(aEvent);
     }
 
-    // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
-    // Event bus for receiving Registry Events)
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class RegistryEvents {
-        @SubscribeEvent
-        public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent) {
-            // register a new block here
-            LOGGER.info("HELLO from Register Block");
-        }
+    @SubscribeEvent
+    public void onClientSetup(FMLClientSetupEvent aEvent) {
+        onModClientSetup(aEvent);
     }
+
+    @SubscribeEvent
+    public void onServerSetup(FMLDedicatedServerSetupEvent aEvent) {
+        onModServerSetup(aEvent);
+    }
+
+    @SubscribeEvent
+    public void onIMCEnqueue(InterModEnqueueEvent aEvent) {
+        onModIMCEnqueue(aEvent);
+    }
+
+    @SubscribeEvent
+    public void onIMCProcess(InterModProcessEvent aEvent) {
+        onModIMCProcess(aEvent);
+    }
+
 }
